@@ -1,0 +1,249 @@
+/*
+    This file is part of Workout Manager
+
+    Workout Manager is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Workout Manager is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with Workout Manager. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**************************************************************
+ *
+ * "Focus mode" adjustments: clarity, fewer competing choices,
+ * strong visual anchors for the current section and for the
+ * main action on each page.
+ *
+ **************************************************************/
+
+:root {
+    --focus-primary: #1c7ed6;
+    --focus-primary-soft: #e7f1fb;
+    --focus-success: #2f9e44;
+    --focus-radius: 0.5rem;
+    --navbar-height: 3.6rem;
+}
+
+/* Always-visible, high-contrast keyboard focus indicator */
+:where(a, button, input, select, textarea) :focus-visible,
+:focus-visible {
+    outline: 3px solid #b6d8fb;
+    outline-offset: 2px;
+    border-radius: 3px;
+}
+
+/* Skip link: keyboard users jump straight to content */
+.skip-link {
+    position: absolute;
+    left: 0.5rem;
+    top: -100px;
+    z-index: 2000;
+    padding: 0.5rem 1rem;
+    background: #fff;
+    border: 2px solid var(--focus-primary);
+    border-radius: var(--focus-radius);
+    font-weight: 600;
+}
+
+.skip-link:focus {
+    top: 0.5rem;
+}
+
+/* ------------------------------------------------------------------
+ * Navigation: one clear current-section marker, flat and readable
+ * ------------------------------------------------------------------ */
+
+#wger-top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+#wger-top-nav .navbar-nav .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    white-space: nowrap;
+    padding: 0.55rem 0.85rem;
+    border-radius: var(--focus-radius);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+#wger-top-nav .navbar-nav .nav-link:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+/* Current section: solid pill instead of an easy-to-miss underline */
+#wger-top-nav .navbar-nav .nav-link.active-section {
+    background: #fff;
+    color: var(--focus-primary);
+    font-weight: 600;
+}
+
+#wger-top-nav .nav-item-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 1.5rem;
+}
+
+/* Breadcrumbs under the navbar give context: "how did I get here" */
+.wger-breadcrumb-strip {
+    padding: 0.45rem 0;
+    font-size: 0.92rem;
+}
+
+/* ------------------------------------------------------------------
+ * Quick-action bar: the 3-4 actions needed daily, always one click
+ * away, no dropdown hunting
+ * ------------------------------------------------------------------ */
+
+.wger-quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.75rem 0 0.25rem;
+}
+
+.wger-quick-actions .btn {
+    border-radius: 999px;
+    font-weight: 500;
+    padding: 0.4rem 1rem;
+}
+
+.wger-quick-actions .btn-primary {
+    box-shadow: 0 1px 0 rgba(21, 64, 120, 0.25);
+}
+
+/* On the dashboard the main action stands out more than anything else */
+.wger-primary-action {
+    font-size: 1.06rem;
+    padding: 0.6rem 1.4rem;
+}
+
+/* ------------------------------------------------------------------
+ * Page chrome: title area reads like a heading, not a toolbar
+ * ------------------------------------------------------------------ */
+
+.page-header {
+    font-size: 1.5rem;
+    margin: 0.15rem 0 0.4rem;
+    color: #212529;
+}
+
+.page-subtitle {
+    color: #6c757d;
+    margin: -0.9rem 0 1rem;
+}
+
+/* Generic "card" wrapper used by the list pages for consistent spacing */
+.wger-card {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--focus-radius);
+    background: #fff;
+    padding: 1rem 1.2rem;
+}
+
+/* ------------------------------------------------------------------
+ * Messages: the alert must not read like noise; icons + colours
+ * ------------------------------------------------------------------ */
+
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    border-radius: var(--focus-radius);
+    border-width: 0 0 0 4px;
+}
+
+.alert .alert-icon {
+    font-size: 1.15rem;
+    line-height: 1.4;
+}
+
+.alert-success { border-left-color: var(--focus-success); }
+.alert-warning { border-left-color: #f08c00; }
+.alert-danger { border-left-color: #e03131; }
+.alert-info { border-left-color: var(--focus-primary); }
+
+.alert .btn-close-alert {
+    margin-left: auto;
+    background: none;
+    border: 0;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0 0.25rem;
+    cursor: pointer;
+}
+
+/* ------------------------------------------------------------------
+ * Forms: labels stay above, one field per row, generous click area
+ * ------------------------------------------------------------------ */
+
+form .form-group,
+form .mb-3 {
+    margin-bottom: 1.15rem;
+}
+
+/* Submit actions live at the bottom-left, always in the same place */
+.wger-form-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+/* ------------------------------------------------------------------
+ * Motion: respect reduced-motion, and stop carousels/animation from
+ * pulling attention
+ * ------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Long pages: a "back to top" helper anchored bottom-right */
+.wger-back-to-top {
+    position: fixed;
+    right: 1rem;
+    bottom: 5.5rem;
+    z-index: 1040;
+    width: 2.6rem;
+    height: 2.6rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 0;
+    background: var(--focus-primary);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.wger-back-to-top.visible {
+    display: inline-flex;
+}
+
+/* Small screens: quick actions stack, tap targets comfortable */
+@media (max-width: 575.98px) {
+    .wger-quick-actions .btn {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+}

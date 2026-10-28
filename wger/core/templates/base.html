@@ -47,10 +47,22 @@
         <div class="col-md-8 order-2 order-sm-1 mt-3" id="main-content">
             {% if messages and not no_messages %}
                 {% for message in messages %}
-                    <div
-                        class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'warning' %}alert-warning{% elif message.tags == 'info' %}alert-info{% elif message.tags == 'success' %}alert-success{% endif %}">
-                        <a href="#" class="close extra-bold" data-bs-dismiss="alert">&times;</a>
-                        {{ message }}
+                    <div role="alert"
+                        class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% else %}success{% endif %}">
+                        <span class="alert-icon" aria-hidden="true">
+                            {% if message.tags == 'error' %}
+                                <span class="{% fa_class 'circle-exclamation' %}"></span>
+                            {% elif message.tags == 'warning' %}
+                                <span class="{% fa_class 'triangle-exclamation' %}"></span>
+                            {% elif message.tags == 'success' %}
+                                <span class="{% fa_class 'circle-check' %}"></span>
+                            {% else %}
+                                <span class="{% fa_class 'circle-info' %}"></span>
+                            {% endif %}
+                        </span>
+                        <div>{{ message }}</div>
+                        <button type="button" class="btn-close-alert" data-bs-dismiss="alert"
+                                aria-label="{% translate 'Close' %}">&times;</button>
                     </div>
                 {% endfor %}
             {% endif %}

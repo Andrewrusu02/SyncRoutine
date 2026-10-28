@@ -1,102 +1,155 @@
 {% load static i18n wger_extras %}
-<nav class="navbar navbar-expand-md bg-primary">
-    <div class="container-fluid">
-        <div class="container-lg" style="display: flex;">
-            <a class="navbar-brand" href="{% url 'core:index' %}">
-                <img src="{% static 'images/logos/logo-bg-white.png' %}" style="width: 38px;"
-                     alt="wger logo">
-            </a>
-            <button class="navbar-toggler"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#main-navbar-navigation"
-                    aria-controls="main-navbar-navigation"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="main-navbar-navigation">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+{% comment %}
+    Main navigation — redesigned for clarity:
 
-                    {#             #}
-                    {# Workout tab #}
-                    {#             #}
-                    <li class="nav-item dropdown">
-                        <a href="{% url 'manager:routine:overview' %}"
+    * Flat, icon-labelled sections instead of long dropdown menus.
+    * The current section is a solid pill, not a subtle underline.
+    * Administration entries never sit next to everyday entries; they
+      live under the user menu where the user expects them.
+    * Everyday actions are reachable in one click via the quick-action
+      bar rendered below the navbar.
+{% endcomment %}
+<nav id="wger-top-nav"
+     class="navbar navbar-expand-md bg-primary"
+     aria-label="{% translate 'Main navigation' %}">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2"
+           href="{% url 'core:index' %}">
+            <img src="{% static 'images/logos/logo-bg-white.png' %}"
+                 style="width: 34px;"
+                 alt="{% translate 'SyncRoutine logo' %}">
+            <span class="d-none d-sm-inline fw-semibold">SyncRoutine</span>
+        </a>
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#main-navbar-navigation"
+                aria-controls="main-navbar-navigation"
+                aria-expanded="false"
+                aria-label="{% translate 'Toggle navigation' %}">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="main-navbar-navigation">
+            <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                    <a href="{% url 'manager:routine:overview' %}"
+                       rel="nofollow"
+                       class="nav-link {% if active_tab == 'workout' %}active-section{% endif %}"
+                       {% if active_tab == 'workout' %}aria-current="page"{% endif %}>
+                        <span class="nav-item-icon" aria-hidden="true">
+                            <span class="{% fa_class 'dumbbell' %}"></span>
+                        </span>
+                        {% translate "Training" %}
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{% url 'nutrition:plan:overview' %}"
+                       rel="nofollow"
+                       class="nav-link {% if active_tab == 'nutrition' %}active-section{% endif %}"
+                       {% if active_tab == 'nutrition' %}aria-current="page"{% endif %}>
+                        <span class="nav-item-icon" aria-hidden="true">
+                            <span class="{% fa_class 'utensils' %}"></span>
+                        </span>
+                        {% translate "Nutrition" %}
+                    </a>
+                </li>
+
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a href="{% url 'weight:overview' %}"
                            rel="nofollow"
-                           class="nav-link dropdown-toggle text-white {% if active_tab == 'workout' %}text-decoration-underline{% endif %}"
-                           data-bs-toggle="dropdown">{% translate "Training" %} <b class="caret"></b></a>
-                        <ul class="dropdown-menu">
+                           class="nav-link {% if active_tab == 'weight' %}active-section{% endif %}"
+                           {% if active_tab == 'weight' %}aria-current="page"{% endif %}>
+                            <span class="nav-item-icon" aria-hidden="true">
+                                <span class="{% fa_class 'scale-balanced' %}"></span>
+                            </span>
+                            {% translate "Body weight" %}
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+
+            {# Right side: the user menu, or login for guests #}
+            <ul class="navbar-nav mb-2 mb-md-0">
+                {% if not user.is_authenticated or user.userprofile.is_temporary %}
+                    <li class="nav-item">
+                        <a href="{% url 'core:user:login' %}"
+                           class="nav-link">
+                            <span class="nav-item-icon" aria-hidden="true">
+                                <span class="{% fa_class 'right-to-bracket' %}"></span>
+                            </span>
+                            {% translate "Login" %}
+                        </a>
+                    </li>
+                    {% if allow_registration %}
+                        <li class="nav-item">
+                            <a href="{% url 'core:user:registration' %}"
+                               class="nav-link fw-semibold">
+                                {% translate "Create account" %}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% else %}
+                    <li class="nav-item dropdown">
+                        <a href="#"
+                           class="nav-link dropdown-toggle"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            <span class="nav-item-icon" aria-hidden="true">
+                                <span class="{% fa_class 'user-circle' %}"></span>
+                            </span>
+                            {{ user|format_username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li>
-                                <a class="dropdown-item" href="{% url 'manager:routine:overview' %}"
-                                   rel="nofollow">
-                                    {% if not user.is_authenticated %}
-                                        <span class="{% fa_class 'lock' %}"></span>
-                                    {% endif %}
+                                <a class="dropdown-item"
+                                   href="{% url 'core:user:preferences' %}">
+                                    {% translate "My preferences" %}
+                                </a>
+                            </li>
+
+                            {# Everyday pages, grouped so admin never mixes in #}
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="dropdown-header">{% translate "My data" %}</li>
+                            <li>
+                                <a class="dropdown-item"
+                                   href="{% url 'manager:routine:overview' %}" rel="nofollow">
                                     {% translate "Routines" %}
                                 </a>
                             </li>
-                            {% if user.is_authenticated %}
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="{% url 'manager:routine:calendar' %}"
-                                       rel="nofollow">
-                                        {% translate "Calendar" %}
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="{% url 'measurements:overview' %}" rel="nofollow">
-                                        {% if not user.is_authenticated %}
-                                            <span class="{% fa_class 'lock' %}"></span>
-                                        {% endif %}
-                                        {% translate "Measurements" %}
-                                    </a>
-                                </li>
-                            {% endif %}
-
                             <li>
-                                <a class="dropdown-item" href="{% url 'gallery:images:overview' %}"
-                                   rel="nofollow">
-                                    {% if not user.is_authenticated %}
-                                        <span class="{% fa_class 'lock' %}"></span>
-                                    {% endif %}
+                                <a class="dropdown-item"
+                                   href="{% url 'manager:routine:calendar' %}" rel="nofollow">
+                                    {% translate "Calendar" %}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item"
+                                   href="{% url 'measurements:overview' %}" rel="nofollow">
+                                    {% translate "Measurements" %}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item"
+                                   href="{% url 'gallery:images:overview' %}" rel="nofollow">
                                     {% translate "Gallery" %}
                                 </a>
                             </li>
-
                             <li>
-                                <a class="dropdown-item" href="{% url 'trophies:overview' %}"
-                                   rel="nofollow">
-                                    {% if not user.is_authenticated %}
-                                        <span class="{% fa_class 'lock' %}"></span>
-                                    {% endif %}
+                                <a class="dropdown-item" href="{% url 'trophies:overview' %}" rel="nofollow">
                                     {% translate "Trophies" %}
                                 </a>
                             </li>
-
-                            <li class="dropdown-divider"></li>
-                            <li class="dropdown-header">{% translate "Workout templates" %}</li>
+                            <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item"
                                    href="{% url 'manager:template:overview' %}" rel="nofollow">
-                                    {% if not user.is_authenticated %}
-                                        <span class="{% fa_class 'lock' %}"></span>
-                                    {% endif %}
-                                    {% translate "Your templates" %}
+                                    {% translate "Workout templates" %}
                                 </a>
                             </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'manager:template:public' %}"
-                                   rel="nofollow">
-                                    {% if not user.is_authenticated %}
-                                        <span class="{% fa_class 'lock' %}"></span>
-                                    {% endif %}
-                                    {% translate "Public templates" %}
-                                </a>
-                            </li>
-
-                            <li class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item"
                                    href="{% url 'exercise:exercise:overview' %}">
@@ -104,315 +157,158 @@
                                 </a>
                             </li>
 
-                            {% if perms.exercises.change_exercise %}
-                                <li class="dropdown-divider"></li>
+                            {# Admin tools: clearly separated, own header #}
+                            {% if user.userprofile.has_exercise_permission or perms.gym.manage_gyms or perms.gym.manage_gym or perms.gym.gym_trainer or perms.core.change_language or perms.trophies.change_trophy %}
+                                <li><hr class="dropdown-divider"></li>
                                 <li class="dropdown-header">{% translate "Administration" %}</li>
+                                {% if perms.core.change_language %}
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="{% url 'core:language:overview' %}">
+                                            {% translate "Languages" %}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if perms.core.change_license %}
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="{% url 'core:license:list' %}">
+                                            {% translate "Licenses" %}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if perms.core.change_repetitionunit %}
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="{% url 'core:repetition-unit:list' %}">
+                                            {% translate "Repetition units" %}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if perms.core.change_weightunit %}
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="{% url 'core:weight-unit:list' %}">
+                                            {% translate "Weight units" %}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if perms.gym.manage_gyms %}
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="{% url 'core:user:list' %}">
+                                            {% translate "User list" %}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'gym:gym:list' %}">
+                                            {% translate "Gyms" %}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if perms.gym.gym_trainer or perms.gym.manage_gym %}
+                                    {% if user.userprofile.gym %}
+                                        <li>
+                                            <a class="dropdown-item"
+                                               href="{% url 'gym:gym:user-list' user.userprofile.gym.pk %}">
+                                                {{ user.userprofile.gym }}
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                {% endif %}
+                                {% if user.userprofile.has_exercise_permission %}
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="{% url 'exercise:history:overview' %}">
+                                            {% translate "Exercise edit history" %}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="{% url 'exercise:equipment:list' %}">
+                                            {% translate "Equipment" %}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="{% url 'exercise:muscle:admin-list' %}">
+                                            {% translate "Muscles" %}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="{% url 'exercise:category:list' %}">
+                                            {% translate "Categories" %}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if perms.trophies.change_trophy %}
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="{% url 'trophies:admin-overview' %}">
+                                            {% translate "Trophies" %}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            {% endif %}
+
+                            <li><hr class="dropdown-divider"></li>
+                            {% if not trainer_identity %}
                                 <li>
-                                    <a class="dropdown-item"
-                                       href="{% url 'exercise:history:overview' %}">
-                                        {% translate "Exercise edit history" %}
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="{% url 'exercise:equipment:list' %}">
-                                        {% translate "Equipment" %}
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="{% url 'exercise:muscle:admin-list' %}">
-                                        {% translate "Muscles" %}
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="{% url 'exercise:category:list' %}">
-                                        {% translate "Categories" %}
-                                    </a>
+                                    <form method="post" action="{% url 'account_logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item">
+                                            <span class="{% fa_class 'sign-out-alt' %}"></span>
+                                            {% translate "Logout" %}
+                                        </button>
+                                    </form>
                                 </li>
                             {% endif %}
                         </ul>
                     </li>
-
-
-                    {#               #}
-                    {# Nutrition tab #}
-                    {#               #}
-                    <li class="nav-item dropdown">
-                        <a href="{% url 'nutrition:plan:overview' %}"
-                           class="dropdown-toggle nav-link text-white {% if active_tab == 'nutrition' %}text-decoration-underline{% endif %}"
-                           data-bs-toggle="dropdown"
-                           rel="nofollow">{% translate "Nutrition" %} <b class="caret"></b></a>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item" href="{% url 'nutrition:plan:overview' %}"
-                                   rel="nofollow">
-                                    {% if not user.is_authenticated %}
-                                        <span class="{% fa_class 'lock' %}"></span>
-                                    {% endif %}
-                                    {% translate "Nutrition plans" %}
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'nutrition:bmi:view' %}"
-                                   rel="nofollow">
-                                    {% if not user.is_authenticated %}
-                                        <span class="{% fa_class 'lock' %}"></span>
-                                    {% endif %}
-                                    {% translate "BMI calculator" %}
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'nutrition:calories:view' %}"
-                                   rel="nofollow">
-                                    {% if not user.is_authenticated %}
-                                        <span class="{% fa_class 'lock' %}"></span>
-                                    {% endif %}
-                                    {% translate "Daily calories calculator" %}
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item"
-                                   href="{% url 'nutrition:ingredient:list' %}">
-                                    {% translate "Ingredient overview" %}
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-
-                    {#            #}
-                    {# Weight tab #}
-                    {#            #}
-                    {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a href="{% url 'weight:overview' %}"
-                               class="dropdown-toggle nav-link text-white {% if active_tab == 'weight' %}text-decoration-underline{% endif %}"
-                               data-bs-toggle="dropdown"
-                               rel="nofollow">{% translate "Body weight" %} <b
-                                class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="{% url 'weight:overview' %}"
-                                       rel="nofollow">
-                                        {% translate "Weight overview" %}
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    {% endif %}
-
-
-                    {#              #}
-                    {# Software tab #}
-                    {#              #}
-                    <li class="nav-item dropdown">
-                        <a href=""
-                           class="dropdown-toggle nav-link text-white {% if active_tab == 'software' %}text-decoration-underline{% endif %}"
-                           data-bs-toggle="dropdown">{% translate "About this software" %} <b
-                            class="caret"></b></a>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item"
-                                   href="{% url 'software:about-us' %}">
-                                    {% translate "Support & Get Involved" %}
-                                </a>
-                            </li>
-                            <li class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item"
-                                   href="{% url 'software:api' %}">{% translate "REST API" %}</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item"
-                                   href="https://github.com/wger-project/wger/blob/master/LICENSE.txt">
-                                    <span class="{% fa_class 'external-link-alt' %}"></span>
-                                    {% translate "License" %}
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="https://wger.readthedocs.io/">
-                                    <span class="{% fa_class 'external-link-alt' %}"></span>
-                                    {% translate "Developer documentation" %}
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item"
-                                   href="https://github.com/wger-project/wger">
-                                    <span class="{% fa_class 'external-link-alt' %}"></span>
-                                    {% translate "Get the code" %} (Github)
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item"
-                                   href="https://hosted.weblate.org/engage/wger/">
-                                    <span class="{% fa_class 'external-link-alt' %}"></span>
-                                    {% translate "Translate" %}
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-
-
-                {#             #}
-                {# Options tab #}
-                {#             #}
-                {% if not user.is_authenticated or user.userprofile.is_temporary %}
-                    <ul class="navbar-nav my-2 my-lg-0">
-                        <li class="dropdown nav-item">
-                            <a href="#" class="dropdown-toggle nav-link text-white"
-                               data-bs-toggle="dropdown">
-                                {% translate "Login" %}{% if allow_registration %} /
-                                    {% translate "Register" %}{% endif %}
-                                <span class="caret"></span>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'core:user:login' %}">
-                                        {% translate "Login" %}
-                                    </a>
-                                </li>
-                                {% if allow_registration %}
-                                    <li>
-                                        <a class="dropdown-item"
-                                           href="{% url 'core:user:registration' %}">
-                                            {% translate "Register" %}
-                                        </a>
-                                    </li>
-                                {% endif %}
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="{% url 'account_reset_password' %}">
-                                        {% translate "Reset password" %}
-                                    </a>
-                                </li>
-                                {%  if user.userprofile.is_temporary %}
-                                <li class="dropdown-divider"></li>
-                                    <li>
-                                        <form method="post" action="{% url 'account_logout' %}">
-                                            {% csrf_token %}
-                                            <button type="submit" class="dropdown-item">
-                                                <span class="{% fa_class 'sign-out-alt' %}"></span>
-                                                {% translate "Logout" %}
-                                            </button>
-                                        </form>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </li>
-                    </ul>
-                {% else %}
-                    <ul class="navbar-nav my-2 my-lg-0">
-                        <li class="dropdown nav-item">
-                            <a href="#" class="dropdown-toggle nav-link text-white"
-                               data-bs-toggle="dropdown">
-                                {{ user|format_username }}
-                                <span class="caret"></span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="{% url 'core:user:preferences' %}">
-                                        {% translate "My preferences" %}
-                                    </a>
-                                </li>
-                                {% if not trainer_identity %}
-                                    <li class="dropdown-divider"></li>
-                                    <li>
-                                        <form method="post" action="{% url 'account_logout' %}">
-                                            {% csrf_token %}
-                                            <button type="submit" class="dropdown-item">
-                                                <span class="{% fa_class 'sign-out-alt' %}"></span>
-                                                {% translate "Logout" %}
-                                            </button>
-                                        </form>
-                                    </li>
-                                {% endif %}
-
-                                {#                #}
-                                {# Administration #}
-                                {#                #}
-                                {% if user.userprofile.has_exercise_permission or perms.gym.manage_gyms or perms.gym.manage_gym or perms.gym.gym_trainer %}
-                                    <li class="dropdown-divider"></li>
-                                    <li class="dropdown-header">{% translate "Administration" %}</li>
-                                    {% if perms.core.change_language %}
-                                        <li>
-                                            <a class="dropdown-item"
-                                               href="{% url 'core:language:overview' %}">
-                                                {% translate "Languages" %}
-                                            </a>
-                                        </li>
-                                    {% endif %}
-                                    {% if perms.core.change_license %}
-                                        <li>
-                                            <a class="dropdown-item"
-                                               href="{% url 'core:license:list' %}">
-                                                {% translate "Licenses" %}
-                                            </a>
-                                        </li>
-                                    {% endif %}
-                                    {% if perms.core.change_repetitionunit %}
-                                        <li>
-                                            <a class="dropdown-item"
-                                               href="{% url 'core:repetition-unit:list' %}">
-                                                {% translate "Repetition units" %}
-                                            </a>
-                                        </li>
-                                    {% endif %}
-                                    {% if perms.core.change_weightunit %}
-                                        <li>
-                                            <a class="dropdown-item"
-                                               href="{% url 'core:weight-unit:list' %}">
-                                                {% translate "Weight units" %}
-                                            </a>
-                                        </li>
-                                    {% endif %}
-                                    {% if perms.gym.manage_gyms %}
-                                        <li>
-                                            <a class="dropdown-item"
-                                               href="{% url 'core:user:list' %}">
-                                                {% translate "User list" %}
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item"
-                                               href="{% url 'gym:gym:list' %}">
-                                                {% translate "Gyms" %}
-                                            </a>
-                                        </li>
-                                    {% endif %}
-
-                                    {# it's not possible to group expressions '(a or b) and c' #}
-                                    {% if perms.gym.gym_trainer or perms.gym.manage_gym %}
-                                        {% if user.userprofile.gym %}
-                                            <li>
-                                                <a class="dropdown-item"
-                                                   href="{% url 'gym:gym:user-list' user.userprofile.gym.pk %}">
-                                                    {{ user.userprofile.gym }}
-                                                </a>
-                                            </li>
-                                        {% endif %}
-                                    {% endif %}
-
-                                    {% if perms.trophies.change_trophy %}
-                                        <li>
-                                            <a class="dropdown-item"
-                                               href="{% url 'trophies:admin-overview' %}">
-                                                {% translate "Trophies" %}
-                                            </a>
-                                        </li>
-                                    {% endif %}
-
-                                {% endif %}
-                            </ul>
-                        </li>
-                    </ul>
                 {% endif %}
-            </div><!--/.nav-collapse -->
+            </ul>
         </div>
     </div>
 </nav>
 
+{# Quick-action bar: everyday actions, one click from any page #}
+{% if user.is_authenticated and not user.userprofile.is_temporary %}
+    <div class="bg-white border-bottom">
+        <div class="container py-2">
+            <div class="wger-quick-actions" role="group"
+                 aria-label="{% translate 'Quick actions' %}">
+                <a class="btn btn-primary"
+                   href="{% url 'manager:routine:overview' %}" rel="nofollow">
+                    <span class="{% fa_class 'dumbbell' %} me-1" aria-hidden="true"></span>
+                    {% translate "My routine" %}
+                </a>
+                <a class="btn btn-outline-primary"
+                   href="{% url 'manager:routine:calendar' %}" rel="nofollow">
+                    <span class="{% fa_class 'calendar' %} me-1" aria-hidden="true"></span>
+                    {% translate "Calendar" %}
+                </a>
+                <a class="btn btn-outline-primary"
+                   href="{% url 'nutrition:plan:overview' %}" rel="nofollow">
+                    <span class="{% fa_class 'utensils' %} me-1" aria-hidden="true"></span>
+                    {% translate "Nutrition plans" %}
+                </a>
+                <a class="btn btn-outline-primary"
+                   href="{% url 'weight:overview' %}" rel="nofollow">
+                    <span class="{% fa_class 'scale-balanced' %} me-1" aria-hidden="true"></span>
+                    {% translate "Body weight" %}
+                </a>
+                <a class="btn btn-outline-primary"
+                   href="{% url 'measurements:overview' %}" rel="nofollow">
+                    <span class="{% fa_class 'ruler' %} me-1" aria-hidden="true"></span>
+                    {% translate "Measurements" %}
+                </a>
+                <a class="btn btn-outline-primary"
+                   href="{% url 'exercise:exercise:overview' %}" rel="nofollow">
+                    <span class="{% fa_class 'magnifying-glass' %} me-1" aria-hidden="true"></span>
+                    {% translate "Exercises" %}
+                </a>
+            </div>
+        </div>
+    </div>
+{% endif %}
