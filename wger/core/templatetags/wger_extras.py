@@ -19,6 +19,7 @@ from functools import lru_cache
 
 # Django
 from django import template
+from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -125,10 +126,20 @@ def _react_translation_paths_json():
 
     paths = {}
     hashed_files = getattr(staticfiles_storage, 'hashed_files', None) or {}
-    for original, hashed in hashed_files.items():
-        m = locale_re.match(original)
-        if m:
-            paths[m.group(1)] = staticfiles_storage.base_url + hashed
+
+    if settings.DEBUG:
+        # In development, hashed files are not collected and are not served by
+        # the static file finder. Use the plain path so the React i18next
+        # backend can load the translation files.
+        for original in hashed_files:
+            m = locale_re.match(original)
+            if m:
+                paths[m.group(1)] = staticfiles_storage.base_url + original
+    else:
+        for original, hashed in hashed_files.items():
+            m = locale_re.match(original)
+            if m:
+                paths[m.group(1)] = staticfiles_storage.base_url + hashed
     return json.dumps(paths)
 
 
